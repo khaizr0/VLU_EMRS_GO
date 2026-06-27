@@ -1,6 +1,6 @@
-# VLU HMS
+# VLU EMRS
 
-Hospital Management System for the Nursing Faculty at Van Lang University.
+Electronic Medical Record System for the Nursing Faculty at Van Lang University.
 
 This repository contains a Go Echo backend, a React Vite frontend, Microsoft Entra ID login, and a PostgreSQL database schema compatible with the existing HMS data model.
 
