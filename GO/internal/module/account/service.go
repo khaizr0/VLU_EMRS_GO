@@ -54,7 +54,7 @@ func (s *Service) ChangeActive(ctx context.Context, claims auth.Claims, id int, 
 		return err
 	}
 	if !canManageUser(currentUser, targetUser) {
-		if targetUser.RoleName == roleAdmin {
+		if targetUser.RoleName == domain.RoleAdmin {
 			return domain.ErrCannotModifyAdmin
 		}
 		return domain.ErrForbidden
@@ -73,7 +73,7 @@ func (s *Service) ChangeRole(ctx context.Context, claims auth.Claims, id int, ro
 		return err
 	}
 	if !canManageUser(currentUser, targetUser) {
-		if targetUser.RoleName == roleAdmin {
+		if targetUser.RoleName == domain.RoleAdmin {
 			return domain.ErrCannotModifyAdmin
 		}
 		return domain.ErrForbidden

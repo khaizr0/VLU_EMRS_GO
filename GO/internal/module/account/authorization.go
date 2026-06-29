@@ -2,14 +2,8 @@ package account
 
 import "github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 
-const (
-	roleAdmin   = "Admin"
-	roleTeacher = "Teacher"
-	roleStudent = "Student"
-)
-
 func canReadUsers(current domain.User) bool {
-	return current.RoleName == roleAdmin || current.RoleName == roleTeacher
+	return current.RoleName == domain.RoleAdmin || current.RoleName == domain.RoleTeacher
 }
 
 func canReadUser(current domain.User, target domain.User) bool {
@@ -17,13 +11,13 @@ func canReadUser(current domain.User, target domain.User) bool {
 }
 
 func canUpdateUserSetting(current domain.User, target domain.User) bool {
-	return current.RoleName == roleAdmin || current.ID == target.ID
+	return current.RoleName == domain.RoleAdmin || current.ID == target.ID
 }
 
 func canManageUser(current domain.User, target domain.User) bool {
-	return current.RoleName == roleAdmin && target.RoleName != roleAdmin
+	return current.RoleName == domain.RoleAdmin && target.RoleName != domain.RoleAdmin
 }
 
 func validAssignableRole(role string) bool {
-	return role == roleTeacher || role == roleStudent
+	return role == domain.RoleTeacher || role == domain.RoleStudent
 }

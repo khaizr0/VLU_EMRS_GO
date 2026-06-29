@@ -84,7 +84,7 @@ func (s *Service) UnassignUser(ctx context.Context, claims auth.Claims, departme
 	if userNotInDepartment(targetUser, department.ID) {
 		return domain.ErrUserNotInDepartment
 	}
-	if isHeadUser(targetUser, department) && currentUser.RoleName != roleAdmin {
+	if isHeadUser(targetUser, department) && currentUser.RoleName != domain.RoleAdmin {
 		return domain.ErrForbidden
 	}
 	return s.repository.UnassignUser(ctx, department.ID, targetUser.ID)
