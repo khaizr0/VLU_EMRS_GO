@@ -19,6 +19,31 @@ const UserQuery = `
 		JOIN "Roles" AS "r" ON "r"."Id" = "u"."RoleId"
 		LEFT JOIN "Departments" AS "d" ON "d"."Id" = "u"."DepartmentId"`
 
+func FindUserByID(ctx context.Context, db *pgxpool.Pool, id int) (domain.User, error) {
+	return ScanUser(db.QueryRow(ctx, UserQuery+` WHERE "u"."Id" = $1`, id))
+}
+
+func ListUsersByDepartment(ctx context.Context, db *pgxpool.Pool, departmentID int) ([]domain.User, error) {
+	rows, err := db.Query(ctx, UserQuery+` WHERE "u"."DepartmentId" = $1 ORDER BY "u"."Id"`, departmentID)
+	if err != nil {
+		return nil, fmt.Errorf("query department users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []domain.User
+	for rows.Next() {
+		user, err := ScanUser(rows)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("query department users: %w", err)
+	}
+	return users, nil
+}
+
 func FindUserByIdentity(ctx context.Context, db *pgxpool.Pool, identityKey string) (domain.User, error) {
 	return ScanUser(db.QueryRow(ctx, UserQuery+` WHERE "u"."IdentityId" = $1`, identityKey))
 }

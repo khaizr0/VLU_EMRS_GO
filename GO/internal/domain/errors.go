@@ -62,4 +62,32 @@ var (
 		BadRequest,
 		"Microsoft token không chứa email hợp lệ",
 	)
+	ErrDepartmentNotFound = newError(
+		NotFound,
+		"Không tìm thấy khoa",
+	)
+	ErrInvalidDepartmentName = newError(
+		BadRequest,
+		"Tên khoa không hợp lệ",
+	)
+	ErrUserAlreadyInOtherDepartment = newError(
+		BadRequest,
+		"Người dùng đã thuộc về khoa khác",
+	)
+	ErrUserAlreadyHeadOfOtherDepartment = newError(
+		BadRequest,
+		"Người dùng này đã là trưởng khoa của khoa khác",
+	)
+	ErrUserNotInDepartment = newError(
+		NotFound,
+		"Không tìm thấy người dùng trong khoa này",
+	)
+	ErrDepartmentHasNoHead = newError(
+		BadRequest,
+		"Khoa này hiện tại chưa có trưởng khoa",
+	)
+	ErrUserIsNotDepartmentHead = newError(
+		BadRequest,
+		"Người dùng hiện tại không còn là trưởng khoa của khoa này",
+	)
 )

@@ -8,6 +8,7 @@ import (
 	appmiddleware "github.com/khaizr0/VLU_EMRS_GO/internal/middleware"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/account"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/department"
 	"github.com/labstack/echo/v4"
 )
 
@@ -35,7 +36,12 @@ func registerRoutes(
 	accountService := account.NewService(accountRepository)
 	accountHandler := account.NewHandler(accountService)
 
+	departmentRepository := department.NewRepository(db)
+	departmentService := department.NewService(departmentRepository)
+	departmentHandler := department.NewHandler(departmentService)
+
 	api := server.Group("/api")
 	auth.RegisterRoutes(api, authHandler, authentication)
 	account.RegisterRoutes(api, accountHandler, authentication)
+	department.RegisterRoutes(api, departmentHandler, authentication)
 }
