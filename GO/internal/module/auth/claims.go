@@ -72,20 +72,17 @@ func ClaimsFromContext(c echo.Context) (Claims, bool) {
 type TokenVerifier struct {
 	keys          *oidc.RemoteKeySet
 	audience      string
-	tenantID      string
 	requiredScope string
 }
 
 func NewTokenVerifier(
 	jwksURL string,
 	audience string,
-	tenantID string,
 	requiredScope string,
 ) *TokenVerifier {
 	return &TokenVerifier{
 		keys:          oidc.NewRemoteKeySet(context.Background(), jwksURL),
 		audience:      audience,
-		tenantID:      tenantID,
 		requiredScope: requiredScope,
 	}
 }
@@ -116,12 +113,16 @@ func (v *TokenVerifier) validClaims(claims Claims, now time.Time) bool {
 		(claims.IssuedAt == 0 || !time.Unix(claims.IssuedAt, 0).After(now.Add(5*time.Minute)))
 
 	validMicrosoft := claims.Version == "2.0" &&
-		claims.TenantID == v.tenantID &&
+		claims.TenantID != "" &&
 		claims.ObjectID != "" &&
 		claims.Issuer == expectedIssuer
 
-	validAccess := contains(claims.Audience, v.audience) &&
-		contains(strings.Fields(claims.Scopes), v.requiredScope)
+	validAudience := contains(claims.Audience, v.audience)
+	if !validAudience && !strings.HasPrefix(v.audience, "api://") {
+		validAudience = contains(claims.Audience, "api://"+v.audience)
+	}
+
+	validAccess := validAudience && contains(strings.Fields(claims.Scopes), v.requiredScope)
 
 	return validTime && validMicrosoft && validAccess
 }

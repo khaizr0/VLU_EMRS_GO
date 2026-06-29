@@ -8,22 +8,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const maxBearerTokenSize = 16 * 1024
+
 func Authentication(verifier *auth.TokenVerifier) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			c.Response().Header().Set(echo.HeaderWWWAuthenticate, "Bearer")
-
 			rawToken, err := bearerToken(c)
 			if err != nil {
-				return err
+				return unauthorized(c, err)
 			}
-			if len(rawToken) > 16*1024 {
-				return domain.ErrInvalidMicrosoftToken
+			if len(rawToken) > maxBearerTokenSize {
+				return unauthorized(c, domain.ErrInvalidMicrosoftToken)
 			}
 
 			claims, err := verifier.Verify(c.Request().Context(), rawToken)
 			if err != nil {
-				return domain.ErrInvalidMicrosoftToken
+				return unauthorized(c, domain.ErrInvalidMicrosoftToken)
 			}
 
 			auth.PutClaims(c, claims)
@@ -39,4 +39,9 @@ func bearerToken(c echo.Context) (string, error) {
 		return "", domain.ErrBearerTokenRequired
 	}
 	return parts[1], nil
+}
+
+func unauthorized(c echo.Context, err error) error {
+	c.Response().Header().Set(echo.HeaderWWWAuthenticate, "Bearer")
+	return err
 }

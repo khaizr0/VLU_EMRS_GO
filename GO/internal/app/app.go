@@ -12,7 +12,6 @@ import (
 
 	"github.com/khaizr0/VLU_EMRS_GO/internal/config"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/database"
-	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 )
 
 func Run(cfg config.Config) error {
@@ -25,7 +24,7 @@ func Run(cfg config.Config) error {
 	}
 	defer db.Close()
 
-	server := newServer(cfg, auth.NewRepository(db))
+	server := newServer(cfg, db)
 	serverError := make(chan error, 1)
 
 	go func() {

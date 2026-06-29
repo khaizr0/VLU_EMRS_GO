@@ -15,7 +15,6 @@ type Config struct {
 	ClientBaseURL         string
 	MicrosoftJWKSURL      string
 	MicrosoftAudience     string
-	MicrosoftTenantID     string
 	MicrosoftAPIScope     string
 	AllowedEmailDomains   map[string]string
 }
@@ -31,7 +30,6 @@ func Load() (Config, error) {
 		"CLIENT_BASEURL",
 		"MICROSOFT_JWKS_URL",
 		"MICROSOFT_AUDIENCE",
-		"MICROSOFT_TENANT_ID",
 		"MICROSOFT_API_SCOPE",
 	)
 	if err != nil {
@@ -50,7 +48,6 @@ func Load() (Config, error) {
 		ClientBaseURL:         env["CLIENT_BASEURL"],
 		MicrosoftJWKSURL:      env["MICROSOFT_JWKS_URL"],
 		MicrosoftAudience:     env["MICROSOFT_AUDIENCE"],
-		MicrosoftTenantID:     env["MICROSOFT_TENANT_ID"],
 		MicrosoftAPIScope:     env["MICROSOFT_API_SCOPE"],
 		AllowedEmailDomains:   domainRoles,
 	}, nil

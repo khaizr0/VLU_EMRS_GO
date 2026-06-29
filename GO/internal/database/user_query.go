@@ -1,4 +1,4 @@
-package auth
+package database
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 )
 
-const userQuery = `
+const UserQuery = `
 		SELECT
 			"u"."Id", "u"."IdentityId", "u"."Email", "u"."Name", "u"."PictureUrl",
 			"u"."Active", "r"."Name", "u"."DepartmentId", "d"."Name",
@@ -19,15 +19,11 @@ const userQuery = `
 		JOIN "Roles" AS "r" ON "r"."Id" = "u"."RoleId"
 		LEFT JOIN "Departments" AS "d" ON "d"."Id" = "u"."DepartmentId"`
 
-func findUserByIdentity(ctx context.Context, db *pgxpool.Pool, identityKey string) (domain.User, error) {
-	return scanUser(db.QueryRow(
-		ctx,
-		userQuery+` WHERE "u"."IdentityId" = $1`,
-		identityKey,
-	))
+func FindUserByIdentity(ctx context.Context, db *pgxpool.Pool, identityKey string) (domain.User, error) {
+	return ScanUser(db.QueryRow(ctx, UserQuery+` WHERE "u"."IdentityId" = $1`, identityKey))
 }
 
-func scanUser(row pgx.Row) (domain.User, error) {
+func ScanUser(row pgx.Row) (domain.User, error) {
 	var user domain.User
 	err := row.Scan(
 		&user.ID,

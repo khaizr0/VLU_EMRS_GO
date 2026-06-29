@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/database"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 )
 
@@ -34,7 +35,7 @@ func (r *Repository) SyncUser(
 }
 
 func (r *Repository) GetByIdentityKey(ctx context.Context, identityKey string) (domain.User, error) {
-	return findUserByIdentity(ctx, r.db, identityKey)
+	return database.FindUserByIdentity(ctx, r.db, identityKey)
 }
 
 func (r *Repository) updateUser(

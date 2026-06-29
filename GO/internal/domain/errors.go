@@ -38,9 +38,21 @@ var (
 		Forbidden,
 		"Email không được phép truy cập vào hệ thống",
 	)
+	ErrForbidden = newError(
+		Forbidden,
+		"Bạn không có quyền thực hiện hành động này",
+	)
 	ErrInactiveUser = newError(
 		Forbidden,
 		"Tài khoản đã bị khóa",
+	)
+	ErrCannotModifyAdmin = newError(
+		BadRequest,
+		"Không thể thực hiện hành động này lên Admin",
+	)
+	ErrInvalidUserRole = newError(
+		BadRequest,
+		"User role không hợp lệ",
 	)
 	ErrUserNotFound = newError(
 		NotFound,

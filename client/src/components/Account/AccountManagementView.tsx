@@ -14,25 +14,26 @@ export const AccountManagementView = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // 1. Fetch both users and departments in parallel
-      const [usersData, departmentsData] = await Promise.all([
-        api.identities.getAllUsers(),
-        api.departments.getAll()
-      ]);
+      const usersData = await api.identities.getAllUsers();
 
-      // 2. Enrich users with department information
-      const enrichedUsers = usersData.map(user => {
-        const dept = departmentsData.find(d => 
-          d.users?.some((u: User) => u.id === user.id) || d.headUserId === user.id
-        );
-        return {
-          ...user,
-          departmentId: dept?.id,
-          departmentName: dept?.name
-        };
-      });
+      try {
+        const departmentsData = await api.departments.getAll();
+        const enrichedUsers = usersData.map(user => {
+          const dept = departmentsData.find(d =>
+            d.users?.some((u: User) => u.id === user.id) || d.headUserId === user.id
+          );
+          return {
+            ...user,
+            departmentId: dept?.id,
+            departmentName: dept?.name
+          };
+        });
 
-      setUsers(enrichedUsers);
+        setUsers(enrichedUsers);
+      } catch (departmentError) {
+        console.warn("Departments API is not available yet:", departmentError);
+        setUsers(usersData);
+      }
     } catch (error: any) {
       console.error("Failed to fetch accounts data:", error);
       toast.error("Không thể tải danh sách tài khoản");

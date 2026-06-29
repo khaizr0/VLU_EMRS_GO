@@ -61,6 +61,25 @@ export async function loginWithMicrosoft(): Promise<void> {
   });
 }
 
+export function isMicrosoftTimeoutError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const errorCode = (error as { errorCode?: string }).errorCode;
+  return errorCode === "timed_out" || error.message.includes("timed_out");
+}
+
+export async function clearMicrosoftSession(): Promise<void> {
+  const account = getMicrosoftAccount();
+  msal.setActiveAccount(null);
+  if (account) {
+    await msal.clearCache({ account });
+    return;
+  }
+  await msal.clearCache();
+}
+
 export async function getMicrosoftAccessToken(): Promise<AuthenticationResult> {
   await initialization;
   const account = getMicrosoftAccount();
@@ -75,6 +94,11 @@ export async function getMicrosoftAccessToken(): Promise<AuthenticationResult> {
       scopes: [apiScope],
     });
   } catch (error) {
+    if (isMicrosoftTimeoutError(error)) {
+      await clearMicrosoftSession();
+      throw error;
+    }
+
     if (error instanceof InteractionRequiredAuthError) {
       await msal.acquireTokenRedirect({
         account,

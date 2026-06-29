@@ -3,8 +3,10 @@ package app
 import (
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/config"
 	appmiddleware "github.com/khaizr0/VLU_EMRS_GO/internal/middleware"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/account"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 	"github.com/labstack/echo/v4"
 )
@@ -12,7 +14,7 @@ import (
 func registerRoutes(
 	server *echo.Echo,
 	cfg config.Config,
-	repository *auth.Repository,
+	db *pgxpool.Pool,
 ) {
 	server.GET("/healthz", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
@@ -21,15 +23,19 @@ func registerRoutes(
 	verifier := auth.NewTokenVerifier(
 		cfg.MicrosoftJWKSURL,
 		cfg.MicrosoftAudience,
-		cfg.MicrosoftTenantID,
 		cfg.MicrosoftAPIScope,
 	)
-	service := auth.NewService(repository, cfg.AllowedEmailDomains)
-	handler := auth.NewHandler(service)
+	authentication := appmiddleware.Authentication(verifier)
 
-	auth.RegisterRoutes(
-		server.Group("/api"),
-		handler,
-		appmiddleware.Authentication(verifier),
-	)
+	authRepository := auth.NewRepository(db)
+	authService := auth.NewService(authRepository, cfg.AllowedEmailDomains)
+	authHandler := auth.NewHandler(authService)
+
+	accountRepository := account.NewRepository(db)
+	accountService := account.NewService(accountRepository)
+	accountHandler := account.NewHandler(accountService)
+
+	api := server.Group("/api")
+	auth.RegisterRoutes(api, authHandler, authentication)
+	account.RegisterRoutes(api, accountHandler, authentication)
 }

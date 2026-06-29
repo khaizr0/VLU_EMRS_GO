@@ -10,9 +10,11 @@ import {
 import type { AccountInfo } from "@azure/msal-browser";
 import type { User } from "@/types";
 import {
+  clearMicrosoftSession,
   getMicrosoftAccessToken,
   getMicrosoftAccount,
   initializeMicrosoftAuth,
+  isMicrosoftTimeoutError,
   loginWithMicrosoft,
   logoutMicrosoft,
 } from "@/auth/microsoft";
@@ -77,13 +79,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await loginWithMicrosoft();
   }, []);
 
-  const logout = useCallback(async () => {
+  const clearAuthState = useCallback(() => {
     setAccessToken(null);
     setCurrentUser(null);
     setMicrosoftAccount(null);
     setIsSynced(false);
-    await logoutMicrosoft();
   }, []);
+
+  const clearSyncedUser = useCallback(() => {
+    setAccessToken(null);
+    setCurrentUser(null);
+    setIsSynced(false);
+  }, []);
+
+  const logout = useCallback(async () => {
+    clearAuthState();
+    await logoutMicrosoft();
+  }, [clearAuthState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,11 +121,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSyncError(null);
       } catch (error) {
         if (cancelled) return;
+        console.error("Microsoft authentication failed:", error);
+
+        if (isMicrosoftTimeoutError(error)) {
+          clearAuthState();
+          await clearMicrosoftSession().catch(console.error);
+          window.location.replace("/login");
+          return;
+        }
+
         const message =
           error instanceof Error ? error.message : "Không thể đăng nhập.";
-        console.error("Microsoft authentication failed:", error);
-        setAccessToken(null);
-        setIsSynced(false);
+        clearSyncedUser();
         setSyncError(message);
       } finally {
         syncingRef.current = false;
@@ -129,7 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         window.clearTimeout(refreshTimerRef.current);
       }
     };
-  }, [getAccessToken]);
+  }, [clearAuthState, clearSyncedUser, getAccessToken]);
 
   return (
     <AuthContext.Provider

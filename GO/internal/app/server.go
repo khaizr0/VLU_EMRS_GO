@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/config"
 	appmiddleware "github.com/khaizr0/VLU_EMRS_GO/internal/middleware"
-	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func newServer(cfg config.Config, repository *auth.Repository) *echo.Echo {
+func newServer(cfg config.Config, db *pgxpool.Pool) *echo.Echo {
 	server := echo.New()
 	server.HideBanner = true
 	server.HidePort = true
@@ -45,6 +45,6 @@ func newServer(cfg config.Config, repository *auth.Repository) *echo.Echo {
 		},
 	}))
 
-	registerRoutes(server, cfg, repository)
+	registerRoutes(server, cfg, db)
 	return server
 }
