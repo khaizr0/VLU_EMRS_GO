@@ -7,6 +7,7 @@ const (
 	Forbidden    Code = "FORBIDDEN"
 	NotFound     Code = "NOT_FOUND"
 	BadRequest   Code = "BAD_REQUEST"
+	Conflict     Code = "CONFLICT"
 )
 
 type Error struct {
@@ -89,5 +90,45 @@ var (
 	ErrUserIsNotDepartmentHead = newError(
 		BadRequest,
 		"Người dùng hiện tại không còn là trưởng khoa của khoa này",
+	)
+	ErrPatientNotFound = newError(
+		NotFound,
+		"Không tìm thấy bệnh nhân",
+	)
+	ErrInvalidPatientName = newError(
+		BadRequest,
+		"Tên bệnh nhân không hợp lệ",
+	)
+	ErrInvalidDateOfBirth = newError(
+		BadRequest,
+		"Ngày sinh không hợp lệ",
+	)
+	ErrInvalidGender = newError(
+		BadRequest,
+		"Giới tính không hợp lệ",
+	)
+	ErrInvalidEthnicity = newError(
+		BadRequest,
+		"Dân tộc không hợp lệ",
+	)
+	ErrInvalidHealthInsuranceNumber = newError(
+		BadRequest,
+		"Số BHYT không đúng định dạng",
+	)
+	ErrDuplicateHealthInsuranceNumber = newError(
+		Conflict,
+		"Số BHYT đã tồn tại",
+	)
+	ErrMedicalRecordNotFound = newError(
+		NotFound,
+		"Không tìm thấy hồ sơ bệnh án",
+	)
+	ErrInvalidMedicalRecord = newError(
+		BadRequest,
+		"Hồ sơ bệnh án không hợp lệ",
+	)
+	ErrInvalidMedicalRecordDate = newError(
+		BadRequest,
+		"Ngày trong hồ sơ bệnh án không hợp lệ",
 	)
 )

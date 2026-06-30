@@ -10,6 +10,10 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/department"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/ethnicity"
+	medicalrecordstore "github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/store"
+	medicalrecordtransport "github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/transport"
+	medicalrecordusecase "github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/usecase"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/patient"
 	"github.com/labstack/echo/v4"
 )
 
@@ -45,9 +49,19 @@ func registerRoutes(
 	ethnicityService := ethnicity.NewService(ethnicityRepository)
 	ethnicityHandler := ethnicity.NewHandler(ethnicityService)
 
+	patientStore := patient.NewStore(db)
+	patientService := patient.NewService(patientStore)
+	patientHandler := patient.NewHandler(patientService)
+
+	medicalRecordRepository := medicalrecordstore.NewRepository(db)
+	medicalRecordService := medicalrecordusecase.NewService(medicalRecordRepository)
+	medicalRecordHandler := medicalrecordtransport.NewHandler(medicalRecordService)
+
 	api := server.Group("/api")
 	auth.RegisterRoutes(api, authHandler, authentication)
 	account.RegisterRoutes(api, accountHandler, authentication)
 	department.RegisterRoutes(api, departmentHandler, authentication)
 	ethnicity.RegisterRoutes(api, ethnicityHandler, authentication)
+	patient.RegisterRoutes(api, patientHandler, authentication)
+	medicalrecordtransport.RegisterRoutes(api, medicalRecordHandler, authentication)
 }

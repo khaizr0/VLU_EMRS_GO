@@ -56,6 +56,8 @@ func statusFromCode(code domain.Code) int {
 		return http.StatusNotFound
 	case domain.BadRequest:
 		return http.StatusBadRequest
+	case domain.Conflict:
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}
