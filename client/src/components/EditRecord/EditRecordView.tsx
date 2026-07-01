@@ -4,6 +4,7 @@ import { api } from "@/services/api";
 import { RecordForm } from "./RecordForm";
 import type { Record as MedicalRecord, Patient, Document, RelatedCharacteristics } from "@/types";
 import { toast } from "sonner";
+import { toOptionalNumber } from "@/lib/utils";
 
 // --- API DTO TYPES ---
 
@@ -179,8 +180,8 @@ interface MedicalRecordDto {
   jobTitleCode: string;
   addressJob: string;
   address: string;
-  provinceCode: string;
-  districtCode: string;
+  provinceCode: number | null;
+  districtCode: number | null;
   provinceName: string;
   districtName: string;
   wardName: string;
@@ -701,8 +702,8 @@ const mapRecordToUpdateCommand = (newRecord: MedicalRecord, patientSnapshot: Pat
     jobTitleCode: patientSnapshot.jobCode || "",
     addressJob: patientSnapshot.workplace || "",
     address: patientSnapshot.address || "",
-    provinceCode: patientSnapshot.provinceCode || null,
-    districtCode: patientSnapshot.districtCode || null,
+    provinceCode: toOptionalNumber(patientSnapshot.provinceCode),
+    districtCode: toOptionalNumber(patientSnapshot.districtCode),
     provinceName: patientSnapshot.provinceName || null,
     districtName: patientSnapshot.districtName || null,
     wardName: patientSnapshot.wardName || null,

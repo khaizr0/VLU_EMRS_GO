@@ -4,6 +4,7 @@ import { api } from "@/services/api";
 import { RecordForm } from "./RecordForm";
 import type { Record, Patient, RelatedCharacteristics } from "@/types";
 import { toast } from "sonner";
+import { toOptionalNumber } from "@/lib/utils";
 
 export const CreateRecordView = () => {
   const { patientId } = useParams();
@@ -326,8 +327,8 @@ export const CreateRecordView = () => {
       addressJob: patientSnapshot.workplace || "",
 
       address: patientSnapshot.address || "",
-      provinceCode: patientSnapshot.provinceCode || null,
-      districtCode: patientSnapshot.districtCode || null,
+      provinceCode: toOptionalNumber(patientSnapshot.provinceCode),
+      districtCode: toOptionalNumber(patientSnapshot.districtCode),
       provinceName: patientSnapshot.provinceName || null,
       districtName: patientSnapshot.districtName || null,
       wardName: patientSnapshot.wardName || null,

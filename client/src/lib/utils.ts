@@ -31,3 +31,9 @@ export function formatDate(dateString: string): string {
 
   return dateString;
 }
+
+export function toOptionalNumber(value: string | number | null | undefined): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) && parsed !== 0 ? parsed : null;
+}

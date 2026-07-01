@@ -180,8 +180,8 @@ interface MedicalRecordDto {
   jobTitleCode: string;
   addressJob: string;
   address: string;
-  provinceCode: string;
-  districtCode: string;
+  provinceCode: number | null;
+  districtCode: number | null;
   provinceName: string;
   districtName: string;
   wardName: string;

@@ -1,19 +1,19 @@
 # Extending medical records
 
-This module is prepared around two layers:
+This module is split by shared record data and concrete record flows:
 
-- `base`: fields and database rows shared by every medical record type.
-- `general`: the current medical record form that already exists in the old backend.
+- `base`: database access for the common `MedicalRecords` row.
+- `shared`: request params, list response, request cleaning, and authorization helpers.
+- `internalandsurgeryrecord`: the current internal medicine and surgery record flow.
 
-When adding a new specialty such as oncology, do not add specialty-only fields into the general detail model. Add a parallel specialty flow instead.
+When adding a new record type such as oncology, keep it as a sibling of `internalandsurgeryrecord` instead of adding specialty-only fields into the current detail model.
 
 Recommended steps:
 
-1. Add a new request type in `dto`, for example `OncologyRecordRequest`.
-2. Add a new mapper in `mapper`, for example `OncologyRecordFromRequest`.
-3. Add usecase methods in `usecase`, for example `CreateOncology` and `UpdateOncology`.
+1. Add a new record folder, for example `oncologyrecord`.
+2. Add its `dto`, `read`, `write`, `delete`, and detail store files as needed.
+3. Reuse `base.Store` for common medical record rows.
 4. Add a specialty table, for example `OncologyRecordDetails`, linked by `Id = MedicalRecords.Id`.
-5. Add store read/write helpers for the specialty detail without changing the general detail flow.
-6. Add specialty routes only when the frontend is ready, for example `/medical-records/:patientId/oncology`.
+5. Register the new route from `medicalrecord/routes.go` only when the frontend is ready.
 
 Keep `RecordType` as a classifier and filter value. Avoid spreading `if recordType == ...` across handlers, mappers, and stores.

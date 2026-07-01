@@ -23,8 +23,8 @@ export interface Patient {
   wardName?: string;
   districtName?: string;
   provinceName?: string;
-  provinceCode?: string;
-  districtCode?: string;
+  provinceCode?: string | number | null;
+  districtCode?: string | number | null;
   workplace?: string;
   subjectType?: string;
   insuranceExpiry?: string;
