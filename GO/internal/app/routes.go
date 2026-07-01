@@ -47,7 +47,7 @@ func registerRoutes(
 	ethnicityService := ethnicity.NewService(ethnicityRepository)
 	ethnicityHandler := ethnicity.NewHandler(ethnicityService)
 
-	patientStore := patient.NewStore(db)
+	patientStore := patient.NewPatientStore(db)
 	patientService := patient.NewService(patientStore)
 	patientHandler := patient.NewHandler(patientService)
 

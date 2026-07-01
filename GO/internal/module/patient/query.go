@@ -1,7 +1,6 @@
 package patient
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,53 +10,25 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 )
 
-// List returns paged patient rows and the total matching count.
-func (s *Store) List(ctx context.Context, filters PatientFilters) ([]domain.Patient, int, error) {
-	where, args := patientWhere(filters)
+const patientQuery = `
+	SELECT
+		"p"."Id", "p"."EthnicityId", "p"."CreatedBy", "p"."Name",
+		"p"."DateOfBirth", "p"."Gender", "p"."HealthInsuranceNumber", "p"."CreatedAt",
+		"e"."Id", "e"."Name"
+	FROM "Patients" AS "p"
+	JOIN "Ethnicities" AS "e" ON "e"."Id" = "p"."EthnicityId"`
 
-	var totalCount int
-	if err := s.db.QueryRow(ctx, `SELECT COUNT(*) FROM "Patients" AS "p"`+where, args...).Scan(&totalCount); err != nil {
-		return nil, 0, fmt.Errorf("count patients: %w", err)
-	}
-
-	listArgs := append(args, filters.PageSize, filters.PageSize*(filters.PageNumber-1))
-	rows, err := s.db.Query(ctx, patientListQuery(where, len(args)), listArgs...)
-	if err != nil {
-		return nil, 0, fmt.Errorf("query patients: %w", err)
-	}
-	defer rows.Close()
-
-	patients := []domain.Patient{}
-	for rows.Next() {
-		patient, err := scanPatient(rows)
-		if err != nil {
-			return nil, 0, err
-		}
-		patients = append(patients, patient)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("query patients: %w", err)
-	}
-	return patients, totalCount, nil
-}
-
-// GetByID loads one patient by ID or returns ErrPatientNotFound.
-func (s *Store) GetByID(ctx context.Context, id int) (domain.Patient, error) {
-	return scanPatient(s.db.QueryRow(ctx, patientQuery+` WHERE "p"."Id" = $1`, id))
-}
-
-// patientListQuery builds the paged patient list query after filters are prepared.
+// patientListQuery adds ordering and paging placeholders to the base patient query.
 func patientListQuery(where string, filterCount int) string {
 	return patientQuery + where +
 		` ORDER BY "p"."Id" DESC LIMIT $` + fmt.Sprint(filterCount+1) +
 		` OFFSET $` + fmt.Sprint(filterCount+2)
 }
 
-// patientWhere converts filters into a WHERE clause and ordered SQL args.
+// patientWhere converts normalized filters into a SQL WHERE clause and ordered arguments.
 func patientWhere(filters PatientFilters) (string, []any) {
 	var conditions []string
 	var args []any
-
 	if filters.SearchPhrase != "" {
 		args = append(args, "%"+filters.SearchPhrase+"%")
 		conditions = append(conditions, searchCondition(len(args)))
@@ -76,12 +47,12 @@ func patientWhere(filters PatientFilters) (string, []any) {
 	return " WHERE " + strings.Join(conditions, " AND "), args
 }
 
-// searchCondition matches patient name or health insurance number.
+// searchCondition builds the shared search expression for name and health insurance number.
 func searchCondition(argIndex int) string {
 	return fmt.Sprintf(`("p"."Name" ILIKE $%d OR "p"."HealthInsuranceNumber" ILIKE $%d)`, argIndex, argIndex)
 }
 
-// scanPatient scans one database row into the patient domain model.
+// scanPatient maps one database row into the patient domain model.
 func scanPatient(row pgx.Row) (domain.Patient, error) {
 	var patient domain.Patient
 	err := row.Scan(

@@ -36,11 +36,11 @@ func (h *Handler) List(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	request, err := listRequest(c)
+	filters, err := patientFiltersFromQuery(c)
 	if err != nil {
 		return err
 	}
-	result, err := h.service.List(c.Request().Context(), claims, request)
+	result, err := h.service.List(c.Request().Context(), claims, filters)
 	if err != nil {
 		return err
 	}
@@ -105,23 +105,17 @@ func (h *Handler) Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// listRequest converts Echo query params into a list request DTO.
-func listRequest(c echo.Context) (ListRequest, error) {
+// patientFiltersFromQuery converts Echo query params into normalized list filters.
+func patientFiltersFromQuery(c echo.Context) (PatientFilters, error) {
 	pageNumber, err := optionalIntQuery(c, "pageNumber", 1)
 	if err != nil {
-		return ListRequest{}, err
+		return PatientFilters{}, err
 	}
 	pageSize, err := optionalIntQuery(c, "pageSize", 30)
 	if err != nil {
-		return ListRequest{}, err
+		return PatientFilters{}, err
 	}
-	return ListRequest{
-		SearchPhrase: c.QueryParam("searchPhrase"),
-		PageNumber:   pageNumber,
-		PageSize:     pageSize,
-		FromDay:      c.QueryParam("fromDay"),
-		ToDay:        c.QueryParam("toDay"),
-	}, nil
+	return newPatientFilters(c.QueryParam("searchPhrase"), pageNumber, pageSize, c.QueryParam("fromDay"), c.QueryParam("toDay"))
 }
 
 // claimsAndID extracts Microsoft claims and a positive patient ID.

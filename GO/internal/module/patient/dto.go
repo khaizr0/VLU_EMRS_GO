@@ -1,8 +1,11 @@
 package patient
 
-import "github.com/khaizr0/VLU_EMRS_GO/internal/domain"
+import (
+	"time"
 
-// PagedResult is the patient list response returned by the transport layer.
+	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
+)
+
 type PagedResult struct {
 	Items           []domain.Patient `json:"items"`
 	TotalPages      int              `json:"totalPages"`
@@ -11,7 +14,6 @@ type PagedResult struct {
 	ItemsTo         int              `json:"itemsTo"`
 }
 
-// PatientRequest carries create/update input from transport into the service.
 type PatientRequest struct {
 	Name                  string `json:"name"`
 	DateOfBirth           string `json:"dateOfBirth"`
@@ -20,11 +22,10 @@ type PatientRequest struct {
 	HealthInsuranceNumber string `json:"healthInsuranceNumber"`
 }
 
-// ListRequest carries list query parameters from transport into the service.
-type ListRequest struct {
+type PatientFilters struct {
 	SearchPhrase string
 	PageNumber   int
 	PageSize     int
-	FromDay      string
-	ToDay        string
+	FromDay      *time.Time
+	ToDay        *time.Time
 }
