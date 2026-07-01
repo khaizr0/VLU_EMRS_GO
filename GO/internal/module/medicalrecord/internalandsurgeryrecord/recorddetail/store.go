@@ -28,8 +28,6 @@ func (s *Store) Attach(ctx context.Context, record domain.MedicalRecord) (domain
 	if err != nil {
 		return domain.MedicalRecord{}, err
 	}
-	record.XRays = []any{}
-	record.Hematologies = []any{}
 	return record, nil
 }
 

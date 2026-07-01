@@ -70,8 +70,8 @@ type MedicalRecord struct {
 	CreatedAt                   time.Time            `json:"createdAt"`
 	DepartmentTransfers         []DepartmentTransfer `json:"departmentTransfers"`
 	Patient                     Patient              `json:"patient"`
-	XRays                       []any                `json:"xRays"`
-	Hematologies                []any                `json:"hematologies"`
+	XRays                       []XRay               `json:"xRays"`
+	Hematologies                []Hematology         `json:"hematologies"`
 	Detail                      *MedicalRecordDetail `json:"detail"`
 }
 

@@ -131,4 +131,16 @@ var (
 		BadRequest,
 		"Ngày trong hồ sơ bệnh án không hợp lệ",
 	)
+	ErrXRayNotFound = newError(
+		NotFound,
+		"Không tìm thấy phiếu X-Quang",
+	)
+	ErrHematologyNotFound = newError(
+		NotFound,
+		"Không tìm thấy phiếu huyết học",
+	)
+	ErrInvalidClinicalRequest = newError(
+		BadRequest,
+		"Thông tin cận lâm sàng không hợp lệ",
+	)
 )

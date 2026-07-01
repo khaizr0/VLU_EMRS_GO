@@ -8,6 +8,7 @@ import (
 	appmiddleware "github.com/khaizr0/VLU_EMRS_GO/internal/middleware"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/account"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/clinical"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/department"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/ethnicity"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord"
@@ -58,4 +59,5 @@ func registerRoutes(
 	ethnicity.RegisterRoutes(api, ethnicityHandler, authentication)
 	patient.RegisterRoutes(api, patientHandler, authentication)
 	medicalrecord.RegisterRoutes(api, db, authentication)
+	clinical.RegisterRoutes(api, db, authentication)
 }

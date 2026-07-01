@@ -6,17 +6,20 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/base"
-	"github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/internalandsurgeryrecord/recorddetail"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord/shared"
 )
 
-type Service struct {
-	baseStore   *base.Store
-	detailStore *recorddetail.Store
+type RecordViewStore interface {
+	Attach(ctx context.Context, record domain.MedicalRecord) (domain.MedicalRecord, error)
 }
 
-func NewService(baseStore *base.Store, detailStore *recorddetail.Store) *Service {
-	return &Service{baseStore: baseStore, detailStore: detailStore}
+type Service struct {
+	baseStore *base.Store
+	viewStore RecordViewStore
+}
+
+func NewService(baseStore *base.Store, viewStore RecordViewStore) *Service {
+	return &Service{baseStore: baseStore, viewStore: viewStore}
 }
 
 func (s *Service) List(ctx context.Context, claims auth.Claims, request shared.ListRequest) (shared.PagedResult, error) {
@@ -50,5 +53,5 @@ func (s *Service) Get(ctx context.Context, claims auth.Claims, id int) (domain.M
 	if err != nil {
 		return domain.MedicalRecord{}, err
 	}
-	return s.detailStore.Attach(ctx, record)
+	return s.viewStore.Attach(ctx, record)
 }
