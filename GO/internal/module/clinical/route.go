@@ -5,7 +5,7 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/clinical/hematology"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/clinical/shared"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/clinical/xray"
-	"github.com/khaizr0/VLU_EMRS_GO/internal/module/pdfimport"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/importpdf"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,7 +14,7 @@ func RegisterRoutes(group *echo.Group, db *pgxpool.Pool, authentication echo.Mid
 	clinicals := group.Group("/medical-records/:recordId/clinicals", authentication)
 	sharedStore := shared.NewStore(db)
 
-	pdfimport.RegisterClinicalRoutes(clinicals)
+	importpdf.RegisterClinicalRoutes(clinicals)
 	xray.RegisterRoutes(clinicals, xray.NewHandler(xray.NewService(xray.NewStore(db), sharedStore)))
 	hematology.RegisterRoutes(clinicals, hematology.NewHandler(hematology.NewService(hematology.NewStore(db), sharedStore)))
 }

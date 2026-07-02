@@ -1,4 +1,4 @@
-package recordcomposer
+package recordresponse
 
 import (
 	"context"

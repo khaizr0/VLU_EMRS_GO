@@ -1,4 +1,4 @@
-package pdfimport
+package importpdf
 
 import (
 	"net/http"
