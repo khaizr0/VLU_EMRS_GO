@@ -6,16 +6,18 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/domain"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/auth"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/clinical/shared"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/notification/publish"
 )
 
 type Service struct {
 	store       *Store
+	publisher   *publish.Service
 	sharedStore *shared.Store
 }
 
 // NewService wires x-ray rules to database stores.
-func NewService(store *Store, sharedStore *shared.Store) *Service {
-	return &Service{store: store, sharedStore: sharedStore}
+func NewService(store *Store, sharedStore *shared.Store, publisher *publish.Service) *Service {
+	return &Service{store: store, sharedStore: sharedStore, publisher: publisher}
 }
 
 // Create adds a new x-ray request to a medical record.
@@ -32,7 +34,11 @@ func (s *Service) Create(ctx context.Context, claims auth.Claims, recordID int, 
 	if err != nil {
 		return 0, err
 	}
-	return s.store.Insert(ctx, domain.XRay{
+	recipients, err := s.publisher.ResolveInitialRecipients(ctx, request.ListDepartmentID, request.AdditionalUserIDs)
+	if err != nil {
+		return 0, err
+	}
+	id, err := s.store.Insert(ctx, domain.XRay{
 		MedicalRecordID:    recordID,
 		RequestedByID:      user.ID,
 		Status:             0,
@@ -43,6 +49,13 @@ func (s *Service) Create(ctx context.Context, claims auth.Claims, recordID int, 
 		FormNumber:         shared.CleanText(request.FormNumber),
 		RoomNumber:         shared.CleanText(request.RoomNumber),
 	})
+	if err != nil {
+		return 0, err
+	}
+	if err := s.publisher.XRayInitial(ctx, id, recipients); err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 // ChangeStatus advances the x-ray workflow and records who changed it.
@@ -58,7 +71,10 @@ func (s *Service) ChangeStatus(ctx context.Context, claims auth.Claims, recordID
 	if err != nil {
 		return err
 	}
-	return s.store.UpdateStatus(ctx, recordID, id, *request.Status, departmentName, user.ID)
+	if err := s.store.UpdateStatus(ctx, recordID, id, *request.Status, departmentName, user.ID); err != nil {
+		return err
+	}
+	return s.publisher.XRayStatusChanged(ctx, id, *request.Status)
 }
 
 // Complete saves final x-ray result fields.

@@ -66,7 +66,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     if (isAuthenticated && isSynced) {
       fetchNotifications();
-      return;
+      const controller = new AbortController();
+      api.notifications.stream(controller.signal, fetchNotifications).catch((error: any) => {
+        if (error?.name !== "AbortError") {
+          console.error("Notification stream disconnected:", error);
+        }
+      });
+      return () => controller.abort();
     }
     if (!isAuthenticated) {
       setNotifications([]);

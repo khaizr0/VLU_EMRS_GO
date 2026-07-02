@@ -7,5 +7,6 @@ func RegisterRoutes(group *echo.Group, handler *Handler, authentication echo.Mid
 	notifications := group.Group("/notifications", authentication)
 
 	notifications.GET("", handler.List)
+	notifications.GET("/stream", handler.Stream)
 	notifications.PUT("/:id/read", handler.MarkRead)
 }

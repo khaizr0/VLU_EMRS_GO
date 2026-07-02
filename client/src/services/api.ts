@@ -689,6 +689,33 @@ export const api = {
       if (!response.ok) throw new Error('Failed to fetch notifications');
       return response.json();
     },
+    stream: async (signal: AbortSignal, onNotification: () => void) => {
+      const response = await fetch(`${API_BASE_URL}/notifications/stream`, {
+        headers: getHeaders(),
+        signal,
+      });
+      if (!response.ok) throw new Error('Failed to connect notification stream');
+      if (!response.body) return;
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() || '';
+
+        for (const event of events) {
+          if (event.includes('event: notification')) {
+            onNotification();
+          }
+        }
+      }
+    },
     markAsRead: async (userNotificationId: number) => {
       const response = await fetch(`${API_BASE_URL}/notifications/${userNotificationId}/read`, {
         method: 'PUT',

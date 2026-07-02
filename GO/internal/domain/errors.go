@@ -147,4 +147,8 @@ var (
 		NotFound,
 		"Không tìm thấy thông báo",
 	)
+	ErrInvalidNotificationRecipient = newError(
+		BadRequest,
+		"Người nhận thông báo không thuộc khoa được chỉ định",
+	)
 )
