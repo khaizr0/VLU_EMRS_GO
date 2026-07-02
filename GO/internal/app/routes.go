@@ -12,6 +12,7 @@ import (
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/department"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/ethnicity"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/medicalrecord"
+	"github.com/khaizr0/VLU_EMRS_GO/internal/module/notification"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/patient"
 	"github.com/khaizr0/VLU_EMRS_GO/internal/module/statistics"
 	"github.com/labstack/echo/v4"
@@ -57,6 +58,10 @@ func registerRoutes(
 	statisticsService := statistics.NewService(statisticsStore)
 	statisticsHandler := statistics.NewHandler(statisticsService)
 
+	notificationRepository := notification.NewRepository(db)
+	notificationService := notification.NewService(notificationRepository)
+	notificationHandler := notification.NewHandler(notificationService)
+
 	api := server.Group("/api")
 	auth.RegisterRoutes(api, authHandler, authentication)
 	account.RegisterRoutes(api, accountHandler, authentication)
@@ -66,4 +71,5 @@ func registerRoutes(
 	medicalrecord.RegisterRoutes(api, db, authentication)
 	clinical.RegisterRoutes(api, db, authentication)
 	statistics.RegisterRoutes(api, statisticsHandler, authentication)
+	notification.RegisterRoutes(api, notificationHandler, authentication)
 }

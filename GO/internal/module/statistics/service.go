@@ -19,9 +19,9 @@ func NewService(store *Store) *Service {
 }
 
 // Dashboard returns the full dashboard payload used by the frontend.
-func (s *Service) Dashboard(ctx context.Context, claims auth.Claims, filters Filters) (Dashboard, error) {
+func (s *Service) Dashboard(ctx context.Context, claims auth.Claims, filters Filters) (domain.Dashboard, error) {
 	if err := s.requireRead(ctx, claims); err != nil {
-		return Dashboard{}, err
+		return domain.Dashboard{}, err
 	}
 	now := s.now()
 	startOfThisMonth := monthStart(now)
@@ -31,25 +31,25 @@ func (s *Service) Dashboard(ctx context.Context, claims auth.Claims, filters Fil
 
 	recordStats, err := s.store.RecordStats(ctx, filters)
 	if err != nil {
-		return Dashboard{}, err
+		return domain.Dashboard{}, err
 	}
 	usersThisMonth, usersLastMonth, err := s.store.UserGrowth(ctx, startOfThisMonth, startOfLastMonth)
 	if err != nil {
-		return Dashboard{}, err
+		return domain.Dashboard{}, err
 	}
 	recordTrend, err := s.store.RecordTrend(ctx, filters, trendStart, trendEnd)
 	if err != nil {
-		return Dashboard{}, err
+		return domain.Dashboard{}, err
 	}
 	userTrend, err := s.store.UserTrend(ctx, trendStart, trendEnd)
 	if err != nil {
-		return Dashboard{}, err
+		return domain.Dashboard{}, err
 	}
 
 	growthPercentage, isIncrease := growth(usersThisMonth, usersLastMonth)
-	return Dashboard{
+	return domain.Dashboard{
 		Summary:                   summaryFrom(recordStats),
-		UserGrowth:                UserGrowth{NewUsersThisMonth: usersThisMonth, NewUsersLastMonth: usersLastMonth, GrowthPercentage: growthPercentage, IsIncrease: isIncrease},
+		UserGrowth:                domain.UserGrowth{NewUsersThisMonth: usersThisMonth, NewUsersLastMonth: usersLastMonth, GrowthPercentage: growthPercentage, IsIncrease: isIncrease},
 		Trends:                    trendsFrom(trendStart, recordTrend, userTrend),
 		OutcomeDistribution:       outcomeDistribution(recordStats),
 		AdmissionTypeDistribution: admissionDistribution(recordStats),
@@ -71,8 +71,8 @@ func (s *Service) requireRead(ctx context.Context, claims auth.Claims) error {
 	return nil
 }
 
-func summaryFrom(stats recordStats) Summary {
-	return Summary{
+func summaryFrom(stats recordStats) domain.Summary {
+	return domain.Summary{
 		TotalRecords:  stats.TotalRecords,
 		SurgicalRate:  percent(stats.SurgeryCount, stats.TotalRecords),
 		ProcedureRate: percent(stats.ProcedureCount, stats.TotalRecords),
@@ -80,33 +80,33 @@ func summaryFrom(stats recordStats) Summary {
 	}
 }
 
-func trendsFrom(start time.Time, recordCounts map[string]int, userCounts map[string]int) TrendStats {
-	trends := TrendStats{MedicalRecords: []DataPoint{}, UserOnboarding: []DataPoint{}}
+func trendsFrom(start time.Time, recordCounts map[string]int, userCounts map[string]int) domain.TrendStats {
+	trends := domain.TrendStats{MedicalRecords: []domain.DataPoint{}, UserOnboarding: []domain.DataPoint{}}
 	for i := 0; i < 6; i++ {
 		label := monthLabel(start.AddDate(0, i, 0))
-		trends.MedicalRecords = append(trends.MedicalRecords, DataPoint{Label: label, Value: recordCounts[label]})
-		trends.UserOnboarding = append(trends.UserOnboarding, DataPoint{Label: label, Value: userCounts[label]})
+		trends.MedicalRecords = append(trends.MedicalRecords, domain.DataPoint{Label: label, Value: recordCounts[label]})
+		trends.UserOnboarding = append(trends.UserOnboarding, domain.DataPoint{Label: label, Value: userCounts[label]})
 	}
 	return trends
 }
 
-func outcomeDistribution(stats recordStats) []DataPoint {
-	points := []DataPoint{}
+func outcomeDistribution(stats recordStats) []domain.DataPoint {
+	points := []domain.DataPoint{}
 	for _, key := range []int{treatmentRecovered, treatmentImproved, treatmentNoChange, treatmentWorse, treatmentDeath} {
 		percentage := percent(stats.OutcomeCounts[key], stats.TotalRecords)
-		points = append(points, DataPoint{Label: treatmentLabels[key], Value: stats.OutcomeCounts[key], Percentage: &percentage})
+		points = append(points, domain.DataPoint{Label: treatmentLabels[key], Value: stats.OutcomeCounts[key], Percentage: &percentage})
 	}
 	return points
 }
 
-func admissionDistribution(stats recordStats) []DataPoint {
-	points := []DataPoint{}
+func admissionDistribution(stats recordStats) []domain.DataPoint {
+	points := []domain.DataPoint{}
 	for _, key := range []int{1, 2, 3} {
-		points = append(points, DataPoint{Label: admissionLabels[key], Value: stats.AdmissionTypeCounts[key]})
+		points = append(points, domain.DataPoint{Label: admissionLabels[key], Value: stats.AdmissionTypeCounts[key]})
 	}
 	return points
 }
 
-func mortalityFrom(stats recordStats) MortalityStats {
-	return MortalityStats{Before24h: stats.Before24h, After24h: stats.After24h, AutopsyRate: percent(stats.AutopsyCount, stats.DeathCount)}
+func mortalityFrom(stats recordStats) domain.MortalityStats {
+	return domain.MortalityStats{Before24h: stats.Before24h, After24h: stats.After24h, AutopsyRate: percent(stats.AutopsyCount, stats.DeathCount)}
 }

@@ -143,4 +143,8 @@ var (
 		BadRequest,
 		"Thông tin cận lâm sàng không hợp lệ",
 	)
+	ErrNotificationNotFound = newError(
+		NotFound,
+		"Không tìm thấy thông báo",
+	)
 )
